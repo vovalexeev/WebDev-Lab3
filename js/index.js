@@ -1,12 +1,9 @@
 const express = require('express')
 const app = express()
-const port = 3000
 const request = require('request');
 const bodyParser = require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
-// var cors = require('cors')
-// app.use(cors())
-
+const port = 3000
 const apiKey = 'f0b947c783873ab1a7c905ad26e85162'
 const baseURL = 'https://api.openweathermap.org/data/2.5/weather';
 const connectionString = 'mongodb+srv://dbUser:1029384756@cluster0.3papj.mongodb.net/web_lab3_db?retryWrites=true&w=majority'
@@ -37,7 +34,6 @@ MongoClient.connect(connectionString, (err, database) => {
 			sendResult(res, err, err ? null : results.ops[0])
 		});
 	});
-
 
 	app.get('/favourites', (req, res) => {
 		res.setHeader('Access-Control-Allow-Origin', '*');

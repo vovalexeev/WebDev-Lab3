@@ -80,18 +80,6 @@ const getWeatherParameters = weatherCity => {
 }
 
 const removeFromFavorites = evt => {
-    /*const thisCityName = evt.currentTarget.parentElement.firstElementChild.innerHTML
-    const favoritesList = JSON.parse(localStorage.getItem('favoritesList').split('_').join(' '))
-    localStorage.setItem('favoritesList', JSON.stringify(favoritesList.filter(cityName => cityName !== thisCityName)))
-    let citiesElementToRemove = []
-    const favoritesList1 = JSON.parse(localStorage.getItem('favoritesList').split('_').join(' '))
-    for (const cityElement of weatherCity.children) {
-        const thisCityName = cityElement.querySelector('.city-name').innerText
-        if (!(favoritesList1.includes(thisCityName)))
-            citiesElementToRemove.push(cityElement)
-    }
-    citiesElementToRemove.forEach(cityElementToRemove => weatherCity.removeChild(cityElementToRemove))*/
-    //const city = evt.currentTarget.parentElement.parentElement
     const thisCityName = evt.currentTarget.parentElement.firstElementChild.innerHTML
     fetch(`${baseURL}/favourites`, {
         method: 'DELETE',
@@ -99,7 +87,10 @@ const removeFromFavorites = evt => {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
         },
         body: `name=${thisCityName}`
-    })
+    }).then(resp => resp.json()).then(() => {}).catch(err => {
+        alert(err);
+        alert("City hasn't been deleted");
+    });
     let citiesElementToRemove = []
     for (const cityElement of weatherCity.children) {
         const thisCity = cityElement.querySelector('.city-name').innerText
@@ -116,7 +107,7 @@ const addToFavorites = async evt => {
     let exist = false;
     for (const cityElement of weatherCity.children) {
         const thisCity = cityElement.querySelector('.city-name').innerText
-        if (cityName === thisCity){
+        if (cityName.split('_').join(' ') === thisCity){
             alert('This city is already in favourites!')
             exist = true
             break
@@ -124,22 +115,7 @@ const addToFavorites = async evt => {
     }
     if (exist === false){
         weatherCity.append(weatherCityWaiting(cityName))
-        //const response = await weatherAPI.getByCityName(cityName)
-        /*
-        if (response.cod === 200) {
-            const favoritesList = JSON.parse(localStorage.getItem('favoritesList'))
-            localStorage.setItem('favoritesList', JSON.stringify([cityName, ...favoritesList]))
-            const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
-            weatherCity.replaceChild(weatherCityFunc(response), loading)
-        } 
-        else{
-            if (response.cod === '404'){
-                alert(`${cityName} not found!`)
-                const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
-                weatherCity.removeChild(loading)
-            } 
-        } */
-        fetch(`${baseURL}/weather/city?q=${cityName}`).then(resp => resp.json()).then(data => {
+        fetch(`${baseURL}/weather/city?q=${cityName.split('_').join(' ')}`).then(resp => resp.json()).then(data => {
 			if (data.name !== undefined) {
 				putFavoriteCity(data, cityName);
             } 
@@ -148,26 +124,14 @@ const addToFavorites = async evt => {
                 const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
                 weatherCity.removeChild(loading)
             }
-		})
+        })
+        .catch(function () {
+            alert('Something went wrong... Please refresh the page!')
+		});
     }
 }
 
 const updateWeatherFavorites = () => {
-    /*const favoritesList = JSON.parse(localStorage.getItem('favoritesList'))
-    let citiesToAdd = []
-    for (const i in favoritesList) {
-        const cityName = favoritesList[i]
-        if (!weatherCity.querySelector(`.weather-city[cityName=${cityName}]`))
-            citiesToAdd.push(cityName)
-    }
-    citiesToAdd.forEach(cityToAdd => {
-        weatherCity.append(weatherCityWaiting(cityToAdd))
-        const newCityElement = weatherCity.querySelector(`.weather-city[cityName=${cityToAdd}]`)
-        weatherAPI.getByCityName(cityToAdd)
-            .then(weather => 
-                weatherCity.replaceChild(weatherCityFunc(weather), newCityElement))
-            .catch(() => alert('Something went wrong... Please refresh the page!'))
-    })*/
     fetch(`${baseURL}/favourites`).then(resp => resp.json()).then(data => {
         favoritesList = data ? data : [];
         let citiesToAdd = []
