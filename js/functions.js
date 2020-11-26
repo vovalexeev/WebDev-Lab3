@@ -92,25 +92,21 @@ const removeFromFavorites = evt => {
     }
     citiesElementToRemove.forEach(cityElementToRemove => weatherCity.removeChild(cityElementToRemove))*/
     //const city = evt.currentTarget.parentElement.parentElement
-    city = evt.currentTarget.parentNode.parentNode;
-    cityName = city.getAttribute('class');
-    i = 0;
-    prevSibling = city;
-    while (prevSibling.previousElementSibling.getAttribute('class') != 'favorites-header') {
-        prevSibling = prevSibling.previousElementSibling;
-        i++;
-    }
+    const thisCityName = evt.currentTarget.parentElement.firstElementChild.innerHTML
     fetch(`${baseURL}/favourites`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
         },
-        body: `num=${i}`
-    }).then(resp => resp.json()).then(() => {}).catch(err => {
-        alert(err);
-        alert("City wasn't deleted");
-    });
-    currentCityElem.remove()
+        body: `name=${thisCityName}`
+    })
+    let citiesElementToRemove = []
+    for (const cityElement of weatherCity.children) {
+        const thisCity = cityElement.querySelector('.city-name').innerText
+        if (thisCityName === thisCity)
+            citiesElementToRemove.push(cityElement)
+    }
+    citiesElementToRemove.forEach(cityElementToRemove => weatherCity.removeChild(cityElementToRemove))
 }
 
 const addToFavorites = async evt => {
@@ -118,12 +114,12 @@ const addToFavorites = async evt => {
     const cityName = evt.currentTarget.firstElementChild.value.split(' ').join('_');
     evt.currentTarget.firstElementChild.value = ''
     let exist = false;
-    const list = JSON.parse(localStorage.getItem('favoritesList'));
-    for (var i = 0; i < list.length; i++){
-        if (list[i] == cityName) {
-            exist = true;
-            alert('This city is already in favorites!')
-            break;
+    for (const cityElement of weatherCity.children) {
+        const thisCity = cityElement.querySelector('.city-name').innerText
+        if (cityName === thisCity){
+            alert('This city is already in favourites!')
+            exist = true
+            break
         }
     }
     if (exist === false){
