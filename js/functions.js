@@ -87,7 +87,10 @@ const removeFromFavorites = evt => {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
         },
         body: `name=${thisCityName}`
-    }).then(resp => resp.json()).then(() => {}).catch(err => {
+    })
+    .then(resp => resp.json())
+    .then(() => {})
+    .catch(err => {
         alert(err);
         alert("City hasn't been deleted");
     });
@@ -102,8 +105,9 @@ const removeFromFavorites = evt => {
 
 const addToFavorites = async evt => {
     evt.preventDefault()
-    const cityName = evt.currentTarget.firstElementChild.value.split(' ').join('_');
+    const cityName1 = evt.currentTarget.firstElementChild.value.split(' ').join('_');
     evt.currentTarget.firstElementChild.value = ''
+    const cityName = cityName1[0].toUpperCase() + cityName1.slice(1)
     let exist = false;
     for (const cityElement of weatherCity.children) {
         const thisCity = cityElement.querySelector('.city-name').innerText
@@ -115,7 +119,9 @@ const addToFavorites = async evt => {
     }
     if (exist === false){
         weatherCity.append(weatherCityWaiting(cityName))
-        fetch(`${baseURL}/weather/city?q=${cityName.split('_').join(' ')}`).then(resp => resp.json()).then(data => {
+        fetch(`${baseURL}/weather/city?q=${cityName.split('_').join(' ')}`)
+        .then(resp => resp.json())
+        .then(data => {
 			if (data.name !== undefined) {
 				putFavoriteCity(data, cityName);
             } 
@@ -125,9 +131,7 @@ const addToFavorites = async evt => {
                 weatherCity.removeChild(loading)
             }
         })
-        .catch(function () {
-            alert('Something went wrong... Please refresh the page!')
-		});
+        .catch(err => alert(err))
     }
 }
 

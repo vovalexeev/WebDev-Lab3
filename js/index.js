@@ -17,8 +17,15 @@ MongoClient.connect(connectionString, (err, database) => {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	
 	app.get('/weather/city', (req, res) => {
-		request(`${baseURL}?q=${req.query.q}&appid=${apiKey}&units=metric`, (err, response, body) => {
-			return sendResult(res, err, body);
+		request(`${baseURL}?q=${req.query.q}&appid=${apiKey}&units=metric`, (error, response, body) => {
+			if (response.statusCode === 404){
+				res.setHeader('Access-Control-Allow-Origin', '*');
+				res.setHeader('content-type', 'application/json; charset=utf-8');
+				return res.status(404).send(body);
+			}
+			else{
+				return sendResult(res, err, body);
+			}
 		});
 	});	
 
@@ -53,9 +60,9 @@ MongoClient.connect(connectionString, (err, database) => {
 
 	app.delete('/favourites', (req, res) => {
 		db = database.db();
-		db.collection('cities').deleteOne(
-			{ name: req.body.name }
-		)
+		db.collection('cities').deleteOne({name: req.body.name}, (err, results) => {
+			sendResult(res, err, JSON.stringify('Note deleted!'))
+		})
 	});
 
 	app.options('*', (req, res) => {
