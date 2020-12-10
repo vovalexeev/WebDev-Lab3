@@ -41,7 +41,7 @@ MongoClient.connect(connectionString, (err, database) => {
 			sendResult(res, err, err ? null : results.ops[0])
 		});
 	});
-
+	
 	app.get('/favourites', (req, res) => {
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.setHeader('content-type', 'application/json; charset=utf-8');
@@ -61,7 +61,7 @@ MongoClient.connect(connectionString, (err, database) => {
 	app.delete('/favourites', (req, res) => {
 		db = database.db();
 		db.collection('cities').deleteOne({name: req.body.name}, (err, results) => {
-			sendResult(res, err, JSON.stringify('Note deleted!'))
+			sendResult(res, err, req.body);
 		})
 	});
 
