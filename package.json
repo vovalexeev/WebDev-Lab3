@@ -4,15 +4,28 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha js/test.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "chai-http": "^4.3.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "jsdom": "^16.4.0",
+    "mock-geolocation": "^1.0.11",
     "mongodb": "^3.6.3",
-    "request": "^2.88.2"
+    "node-fetch": "^2.6.1",
+    "request": "^2.88.2",
+    "save-dev": "0.0.1-security",
+    "sinon-mongo": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^3.6.3",
+    "chai": "^4.2.0",
+    "fetch-mock": "^9.11.0",
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.2"
   }
 }

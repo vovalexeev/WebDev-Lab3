@@ -54,11 +54,15 @@ function updateWeatherHere () {
     })
 }
     
+function getIconURL(iconCode) {
+    return `http://openweathermap.org/img/wn/${iconCode}.png`
+}
 
 const setWeatherParameters = (element, weatherObject) => {
     const {name, icon, temperature, wind, cloud, pressure, humidity, coordinates} = getWeatherParameters(element)
     name.innerHTML = weatherObject.name
-    icon.src = weatherAPI.getIconURL(weatherObject.weather[0].icon)
+    const iconCode = weatherObject.weather[0].icon
+    icon.src = getIconURL(weatherObject.weather[0].icon)
     temperature.innerHTML = `${Math.round(weatherObject.main.temp)}°C`
     wind.innerHTML = `${weatherObject.wind.speed} m/s`
     cloud.innerHTML = `${weatherObject.clouds.all}%`
