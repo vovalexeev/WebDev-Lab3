@@ -113,6 +113,29 @@ const removeFromFavorites = evt => {
     });
 }
 
+const removeFromFavoritesTest = cityName => {
+    const thisCityName = cityName
+    fetch(`${baseURL}/favourites`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+        },
+        body: `name=${thisCityName}`
+    })
+    .then(resp => resp.json())
+    .then(() => {let citiesElementToRemove = []
+        for (const cityElement of weatherCity.children) {
+            const thisCity = cityElement.querySelector('.city-name').innerText
+            if (thisCityName === thisCity)
+                citiesElementToRemove.push(cityElement)
+        }
+        citiesElementToRemove.forEach(cityElementToRemove => weatherCity.removeChild(cityElementToRemove))})
+    .catch(err => {
+        alert(err);
+        alert("City hasn't been deleted");
+    });
+}
+
 const addToFavorites = async evt => {
     evt.preventDefault()
     const cityName1 = evt.currentTarget.firstElementChild.value.split(' ').join('_');
@@ -145,7 +168,7 @@ const addToFavorites = async evt => {
     }
 }
 
-const addToFavorites2 = cityName => {
+const addToFavoritesTest = cityName => {
     weatherCity.append(weatherCityWaiting(cityName))
     fetch(`${baseURL}/weather/city?q=${cityName.split('_').join(' ')}`)
     .then(resp => resp.json())
@@ -157,10 +180,9 @@ const addToFavorites2 = cityName => {
             alert(`${cityName} not found!`);
             const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
             weatherCity.removeChild(loading)
-            execCallback();
         }
     })
-    .catch(err => {alert(err); execCallback();})
+    .catch(err => {alert(err);})
 }
 
 function putFavoriteCity(data, cityName) {
@@ -171,27 +193,11 @@ function putFavoriteCity(data, cityName) {
 		},
 		body: `name=${data.name}`
 	}).then(resp => resp.json()).then(() => {
-        console.log(data);
         const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
         weatherCity.replaceChild(weatherCityFunc(data), loading)
-        execCallback();
 	}).catch(function () {
         alert('Something went wrong... Please refresh the page!')
-        execCallback();
 	});
-}
-
-function execCallback() {
-	if (callback == null) {
-		return;
-	}
-	try {
-		callback();
-		callback = null;
-	} catch(err) {
-		console.log(err);
-		callback = null;
-	}
 }
 
 const updateWeatherFavorites = () => {
@@ -208,7 +214,6 @@ const updateWeatherFavorites = () => {
             const newCityElement = weatherCity.querySelector(`.weather-city[cityName=${cityToAdd}]`)
             fetch(`${baseURL}/weather/city?q=${cityToAdd}`)
             .then(resp => resp.json())
-            //weatherAPI.getByCityName(cityToAdd)
                 .then(weather => 
                     weatherCity.replaceChild(weatherCityFunc(weather), newCityElement))
                 .catch(() => alert('Something went wrong... Please refresh the page!'))
@@ -216,25 +221,6 @@ const updateWeatherFavorites = () => {
 	})
 	.catch(err => {});
 };
-
-
-/*if (!localStorage.getItem('favoritesList'))
-    localStorage.setItem('favoritesList', '[]')
-const weatherHere = document.querySelector('.weather-here')
-const weatherCity = document.querySelector('.weather-city-list')
-updateWeatherHere()
-updateWeatherFavorites()
-
-const updateButton = document.querySelectorAll('.weather-here-update-button, .update-media')
-for(let i = 0; i < updateButton.length; i++){ 
-    if (updateButton){
-        updateButton[i].addEventListener('click', updateWeatherHere)
-    }
-}	
-const addCityButton = document.querySelector('.add-city-form')
-addCityButton.addEventListener('submit', addToFavorites)
-window.addEventListener("offline", function(e) {alert("Internet disconnected... Please refresh the page!");})
-*/
 
 updateWeatherHere()
 updateWeatherFavorites()
@@ -244,15 +230,16 @@ module.exports = {
     weatherCityWaiting, //
     weatherHereFunc, //
     weatherCityFunc, //
-    updateWeatherHere,
+    updateWeatherHere, //
     getIconURL, //
     setWeatherParameters, //
     getWeatherParameters, //
     removeFromFavorites,
-    addToFavorites,
-    putFavoriteCity,
+    addToFavorites, //
+    putFavoriteCity, //
     updateWeatherFavorites, //
     weatherHere, //
     weatherCity, //
-    addToFavorites2
+    addToFavoritesTest, //
+    removeFromFavoritesTest
 }

@@ -172,6 +172,21 @@ const readyTemplateFavoriteCity = ` <li class="weather-city" cityname="Moscow">
     </li> 
     `.replace(/\s+/g,' ');
 
+mockCity = {
+    base: "stations",
+    clouds: {all: 90},
+    cod: 200,
+    coord: {lon: 37, lat: 55},
+    main: {temp: 4.15, feels_like: 5.98, temp_min: 3.15, temp_max: 3.15, pressure: 1039, humidity: 91},
+    name: "Moscow",
+    weather: [{
+        description: "overcast clouds",
+        icon: "04n",
+        id: 804,
+        main: "Mist"}],
+    wind: {speed: 1, deg: 350}	
+};
+
 const jsdom = require("jsdom");
 const JSDOM = jsdom.JSDOM;
 window = new JSDOM(html).window;
@@ -203,7 +218,7 @@ const weatherHereWaitingTemplate = document.querySelector('template#weather-here
 const weatherCityWaitingTemplate = document.querySelector('template#weather-city-waiting')
 const weatherCityTemplate = document.querySelector('template#weather-city')
 const weatherHereTemplate = document.querySelector('template#weather-here')
-/*
+
 describe('CLIENT: setWeatherParameters()', () => {
 
     it('should set weather parameters from response in empty template for local city', () => {
@@ -307,49 +322,49 @@ describe("CLIENT: updateWeatherFavorites()", () => {
         expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal(readyTemplateFavoriteCity)
         script.weatherCity.innerHTML = ""
     })
+
+	it('should return empty list of cities due to bad network', async () => {
+
+		cityInput = 'Chelyabinsk';
+		fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, 500);
+		fetchMock.get(`${baseURL}/favourites`, ['Chelyabinsk']);
+		script.updateWeatherFavorites(() => {
+			expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal("");
+			fetchMock.done();
+            fetchMock.restore();
+		});
+	})
 })
-*/
-mockCity = {
-    base: "stations",
-    clouds: {all: 0},
-    cod: 200,
-    coord: {lon: 25, lat: 50},
-    main: {temp: 257.15, feels_like: 252.98, temp_min: 257.15, temp_max: 257.15, pressure: 1039, humidity: 91},
-    name: "Chelyabinsk",
-    weather: [{
-        description: "mist",
-        icon: "50n",
-        id: 701,
-        main: "Mist"}],
-    wind: {speed: 1, deg: 350}	
-};
 
-mainSection = `
-		<h2 class="main-city-name">Chelyabinsk</h2>
-		<img class="main-weather-img" src="https://openweathermap.org/img/wn/50n@2x.png">
-		<p class="main-temp">-16°</p>
-	`.replace(/\s+/g,' ');
+describe('CLIENT: removeFromFavorites()', () => {
 
-info = `
-		<div class="weather-property"> <h4>Ветер</h4> <p>1 m/s, North</p> </div> 
-		<div class="weather-property"> <h4>Облачность</h4> <p>0 %</p> </div> 
-		<div class="weather-property"> <h4>Давление</h4> <p>1039 hpa</p> </div>       	 
-		<div class="weather-property"> <h4>Влажность</h4> <p>91 %</p> </div> 
-		<div class="weather-property"> <h4>Координаты</h4> <p>[25 50]</p> </div>
-	`.replace(/\s+/g,' ');
+	it('should remove city from favorites', async () => {
 
-errorSection = `<p class="wait">О нет, что-то пошло не так</p>`.replace(/\s+/g,' ');
+        fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity, { overwriteRoutes: false });
+		fetchMock.post(`${baseURL}/favourites`, {}, { overwriteRoutes: false });
+		fetchMock.delete(`${baseURL}/favourites`, mockCity, { overwriteRoutes: false });
+		script.removeFromFavoritesTest("Moscow", () => {
+            expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal("")
+            fetchMock.done();
+            fetchMock.restore();
+		});
+		geolocate.send({latitude: 37, longitude: 55});
+	})
 
-citySection = `
-		<div class="city-weather">
-		<h3>Chelyabinsk</h3>
-		<p class="city-temp">-16°</p>
-		<img class="city-weather-img" src="https://openweathermap.org/img/wn/50n@2x.png">
-		<button class="circle-btn"></button>
-		</div>
-		<div class="info">`.replace(/\s+/g,' ')
+	it('should remove city with 500 error', async () => {
 
-describe("CLIENT: putFavoriteCity()", () => {
+        fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity, { overwriteRoutes: false });
+		fetchMock.post(`${baseURL}/favourites`, {}, { overwriteRoutes: false });
+		fetchMock.delete(`${baseURL}/weather/coordinates?lat=37&lon=55`, 500, { overwriteRoutes: false });
+		script.removeFromFavoritesTest("Moscow", () => {
+			expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal(readyTemplateFavoriteCity);
+            fetchMock.done();
+            fetchMock.restore();
+		});
+	})
+})
+
+describe("CLIENT: addFavoriteCity()", () => {
 
     afterEach(() => {
 		window = new JSDOM(html).window;
@@ -357,25 +372,62 @@ describe("CLIENT: putFavoriteCity()", () => {
 		global.window = window;
 	})
 
-	it('add city with ok response from server', async () => {
-		cityInput = 'Chelyabinsk';
-		fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity);
-		fetchMock.post(`${baseURL}/favourites`, {});
-		script.addToFavorites2(cityInput, () => {
-            expect(1).to.equal(1);
+	it('should add city with ok response from server', async () => {
+        
+        cityInput = 'Moscow';
+		fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity, { overwriteRoutes: false });
+		fetchMock.post(`${baseURL}/favourites`, {}, { overwriteRoutes: false });
+		script.addToFavoritesTest(cityInput, () => {
+            expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal(readyTemplateFavoriteCity);
             fetchMock.done();
             fetchMock.restore();
-			//done();
+		});
+    })
+    
+    it('should add city with error response from server', async () => {
+        
+        cityInput = 'Moscow';
+		fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity, { overwriteRoutes: false });
+		fetchMock.post(`${baseURL}/favourites`, 500, { overwriteRoutes: false });
+		script.addToFavoritesTest(cityInput, () => {
+            expect(script.weatherCity.innerHTML.replace(/\s+/g,' ')).to.equal("");	
+            fetchMock.restore();
 		});
 	})
-	
-/*
-    it("should return empty list of favorite cities", async () => {
-
-        const cityName = "Moscow"
-        script.weatherCity.append(script.weatherCityWaiting(cityName))
-        await script.putFavoriteCity(responseBody, cityName)
-        expect(script.weatherCity.innerHTML).to.equal(readyTemplateFavoriteCity)
-    })*/
 })
 
+describe('CLIENT: updateWeatherHere()', () => {
+
+	it('should update main city by coordinates', async () => {
+
+		fetchMock.get(`${baseURL}/weather/coordinates?lat=37&lon=55`, mockCity);
+		script.updateWeatherHere(() => {
+            expect(script.weatherHere.innerHTML.replace(/\s+/g,' ')).to.equal(readyTemplateHere)
+            fetchMock.done();
+            fetchMock.restore();
+		});
+		geolocate.send({latitude: 37, longitude: 55});
+	})
+
+	it('should update main city by default', async () => {
+        
+        fetchMock.get(`${baseURL}/weather/city?q=${cityInput}`, mockCity, { overwriteRoutes: false });
+		script.updateWeatherHere(() => {
+            expect(script.weatherHere.innerHTML.replace(/\s+/g,' ')).to.equal(readyTemplateHere)
+            fetchMock.done();
+            fetchMock.restore();
+			done();
+		});
+		geolocate.sendError({code: 1, message: "DENIED"});
+	})
+
+	it('should update main city with 500 error', async () => {
+
+		fetchMock.get(`${baseURL}/weather/coordinates?lat=37&lon=55`, 500, { overwriteRoutes: false });
+		script.updateWeatherHere(() => {
+			expect(script.weatherHere.innerHTML.replace(/\s+/g,' ')).to.equal("");
+            fetchMock.done();
+            fetchMock.restore();
+		});
+	})
+})
