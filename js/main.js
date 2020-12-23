@@ -1,12 +1,10 @@
 //const weatherAPI = new WeatherAPI()
 
-const weatherHere = document.querySelector('.weather-here')
+/*const weatherHere = document.querySelector('.weather-here')
 const weatherCity = document.querySelector('.weather-city-list')
-if (!localStorage.getItem('favoritesList'))
-    localStorage.setItem('favoritesList', '[]')
 
 updateWeatherHere()
-updateWeatherFavorites()
+updateWeatherFavorites()*/
 
 const updateButton = document.querySelectorAll('.weather-here-update-button, .update-media')
 for(let i = 0; i < updateButton.length; i++){ 

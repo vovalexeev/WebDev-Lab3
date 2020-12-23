@@ -4,14 +4,11 @@ const chaiHttp = require('chai-http');
 const should = chai.should();
 const sinon = require('sinon');
 require('sinon-mongo');
-const server = require('./index') 
-const MongoClient = require('mongodb').MongoClient;
-const Collection = require('mongodb/lib/collection');
+const server = require('../index') 
 chai.use(chaiHttp);
 
 const apiKey = 'f0b947c783873ab1a7c905ad26e85162'
 const baseURL = 'https://api.openweathermap.org/data/2.5/weather';
-const connectionString = 'mongodb+srv://dbUser:1029384756@cluster0.3papj.mongodb.net/web_lab3_db?retryWrites=true&w=majority'
 
 describe('BACKEND: GET /weather/coordinates', () => {
 	
@@ -132,6 +129,29 @@ describe('BACKEND: GET /weather/city', () => {
                 done();
         });
 	})
+
+	it('should return 404 status due to wrong name of city', (done) => {
+		
+		const responseObject = {
+			statusCode: 404,
+		};
+		const city = 'Ghfgjhhgfhfj'
+
+		requestMock = sinon.mock(request);
+		requestMock.expects("get")
+			.once()
+			.withArgs(`${baseURL}?q=${city}&appid=${apiKey}&units=metric`)
+			.yields(null, responseObject, null);
+
+		chai.request(server) 
+			.get('/weather/city?q=' + city)
+			.end((err, res) => {
+				res.should.have.status(404);
+                requestMock.verify();
+                requestMock.restore();
+                done();
+        });
+    })
 })
 
 describe('BACKEND: POST /favourites', () => {
@@ -155,7 +175,27 @@ describe('BACKEND: POST /favourites', () => {
                 done();
         });
 	})
-	
+/*
+	it('should return error-wrong city response', (done) => {
+
+		body = `name=hgfhgfh`
+
+		mockCollectionCities = sinon.mongo.collection();
+		mockCollectionCities.insertOne.yields(null, { ops: [{ name: 'hgfhgfh' }]});
+		global.DB = sinon.mongo.db({
+			cities: mockCollectionCities
+		});
+
+		chai.request(server) 
+			.post('/favourites')
+			.send(body)
+			.end((err, res) => {
+				res.should.have.status(200);
+				sinon.assert.calledOnce(mockCollectionCities.insertOne);
+                done();
+        });
+	})*/
+
 	it('should return error response', (done) => {
 
 		body = `name=Bejing`

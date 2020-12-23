@@ -1,4 +1,9 @@
+
+
 const baseURL = 'http://localhost:3000';
+
+const weatherHere = document.querySelector('.weather-here')
+const weatherCity = document.querySelector('.weather-city-list')
 
 const weatherHereWaiting = () => {
     const weatherHereWaitingTemplate = document.querySelector('template#weather-here-waiting')
@@ -29,7 +34,7 @@ const weatherCityFunc = (weather) => {
     return newWeatherCity
 }
 
-function updateWeatherHere () {
+const updateWeatherHere = () => {
     weatherHere.innerHTML = ""
     const waitingCity = weatherHereWaiting()
     weatherHere.append(waitingCity)
@@ -136,8 +141,26 @@ const addToFavorites = async evt => {
                 weatherCity.removeChild(loading)
             }
         })
-        .catch(err => alert(err))
+        .catch(err => {alert(err)})
     }
+}
+
+const addToFavorites2 = cityName => {
+    weatherCity.append(weatherCityWaiting(cityName))
+    fetch(`${baseURL}/weather/city?q=${cityName.split('_').join(' ')}`)
+    .then(resp => resp.json())
+    .then(data => {
+        if (data.name !== undefined) {
+            putFavoriteCity(data, cityName);
+        } 
+        else {
+            alert(`${cityName} not found!`);
+            const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
+            weatherCity.removeChild(loading)
+            execCallback();
+        }
+    })
+    .catch(err => {alert(err); execCallback();})
 }
 
 function putFavoriteCity(data, cityName) {
@@ -151,9 +174,24 @@ function putFavoriteCity(data, cityName) {
         console.log(data);
         const loading = weatherCity.querySelector(`.weather-city[cityName=${cityName}]`)
         weatherCity.replaceChild(weatherCityFunc(data), loading)
+        execCallback();
 	}).catch(function () {
-		alert('Something went wrong... Please refresh the page!')
+        alert('Something went wrong... Please refresh the page!')
+        execCallback();
 	});
+}
+
+function execCallback() {
+	if (callback == null) {
+		return;
+	}
+	try {
+		callback();
+		callback = null;
+	} catch(err) {
+		console.log(err);
+		callback = null;
+	}
 }
 
 const updateWeatherFavorites = () => {
@@ -178,3 +216,43 @@ const updateWeatherFavorites = () => {
 	})
 	.catch(err => {});
 };
+
+
+/*if (!localStorage.getItem('favoritesList'))
+    localStorage.setItem('favoritesList', '[]')
+const weatherHere = document.querySelector('.weather-here')
+const weatherCity = document.querySelector('.weather-city-list')
+updateWeatherHere()
+updateWeatherFavorites()
+
+const updateButton = document.querySelectorAll('.weather-here-update-button, .update-media')
+for(let i = 0; i < updateButton.length; i++){ 
+    if (updateButton){
+        updateButton[i].addEventListener('click', updateWeatherHere)
+    }
+}	
+const addCityButton = document.querySelector('.add-city-form')
+addCityButton.addEventListener('submit', addToFavorites)
+window.addEventListener("offline", function(e) {alert("Internet disconnected... Please refresh the page!");})
+*/
+
+updateWeatherHere()
+updateWeatherFavorites()
+
+module.exports = {
+    weatherHereWaiting, //
+    weatherCityWaiting, //
+    weatherHereFunc, //
+    weatherCityFunc, //
+    updateWeatherHere,
+    getIconURL, //
+    setWeatherParameters, //
+    getWeatherParameters, //
+    removeFromFavorites,
+    addToFavorites,
+    putFavoriteCity,
+    updateWeatherFavorites, //
+    weatherHere, //
+    weatherCity, //
+    addToFavorites2
+}
